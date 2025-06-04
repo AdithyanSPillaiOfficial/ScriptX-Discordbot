@@ -95,35 +95,40 @@ for (const file of fs.readdirSync(buttonsPath).filter(f => f.endsWith('.js'))) {
   client.buttons.set(button.customId, button);
 }
 
+try {
+  client.on('interactionCreate', async interaction => {
+    // 🟢 Button
+    if (interaction.isButton()) {
+      const button = client.buttons.get(interaction.customId);
+      if (!button) return;
 
-client.on('interactionCreate', async interaction => {
-  // 🟢 Button
-  if (interaction.isButton()) {
-    const button = client.buttons.get(interaction.customId);
-    if (!button) return;
-
-    try {
-      await button.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({ content: '⚠️ Error handling button interaction.', ephemeral: true });
+      try {
+        await button.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: '⚠️ Error handling button interaction.', ephemeral: true });
+      }
+      return;
     }
-    return;
-  }
 
-  // 🟣 Slash Command
-  if (interaction.isChatInputCommand()) {
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+    // 🟣 Slash Command
+    if (interaction.isChatInputCommand()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
 
-    try {
-      await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({ content: '⚠️ Error executing command.', ephemeral: true });
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: '⚠️ Error executing command.', ephemeral: true });
+      }
     }
-  }
-});
+  });
+  
+} catch (error) {
+  console.log(error)
+}
+
 
 
 
