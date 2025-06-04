@@ -7,7 +7,8 @@ module.exports = {
 
     const updatedEmbed = EmbedBuilder.from(oldEmbed)
       .setColor('Green')
-      .setFooter({ text: 'Ticket marked as solved', iconURL: interaction.user.displayAvatarURL() });
+      .addFields({ name: 'Status', value: `✅ Solved by <@${interaction.user.id}>` })
+      .setFooter({ text: `Ticket marked as solved`, iconURL: interaction.user.displayAvatarURL() });
 
     const disabledRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -17,6 +18,11 @@ module.exports = {
         .setDisabled(true)
     );
 
+    const oldEmbedFields= EmbedBuilder.from(oldEmbed).data.fields
+    //console.log(oldEmbedFields[0].value)
+    const submittedUserId = oldEmbedFields[0].value.replace(/[<@!>]/g, ''); 
+    const submittedUser = await interaction.client.users.fetch(submittedUserId);
     await interaction.update({ embeds: [updatedEmbed], components: [disabledRow] });
+    await submittedUser.send({content : "✅ Ticket Resolved", embeds: [updatedEmbed]})
   }
 };

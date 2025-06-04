@@ -42,6 +42,7 @@ module.exports = {
         channel.send({ embeds: [embed], components: [row] });
 
         await interaction.reply({ content: "Ticket Submitted", flags: MessageFlags.Ephemeral })
+        await interaction.user.send({ embeds: [embed]})
     },
 };
 
