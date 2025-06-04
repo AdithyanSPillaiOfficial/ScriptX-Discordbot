@@ -87,44 +87,44 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
+client.buttons = new Collection();
+// Load buttons
+const buttonsPath = path.join(__dirname, 'buttons');
+for (const file of fs.readdirSync(buttonsPath).filter(f => f.endsWith('.js'))) {
+  const button = require(`./buttons/${file}`);
+  client.buttons.set(button.customId, button);
+}
+
+
 client.on('interactionCreate', async interaction => {
-  // ✅ Handle button interaction first
+  // 🟢 Button
   if (interaction.isButton()) {
-    if (interaction.customId === 'mark_solved') {
-      const oldEmbed = interaction.message.embeds[0];
+    const button = client.buttons.get(interaction.customId);
+    if (!button) return;
 
-      const updatedEmbed = EmbedBuilder.from(oldEmbed)
-        .setColor('Green')
-        .setFooter({ text: 'Ticket marked as solved', iconURL: interaction.user.displayAvatarURL() });
-
-      const disabledRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId('mark_solved')
-          .setLabel('✅ Solved')
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(true)
-      );
-
-      await interaction.update({ embeds: [updatedEmbed], components: [disabledRow] });
+    try {
+      await button.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: '⚠️ Error handling button interaction.', ephemeral: true });
     }
-
-    return; // exit early if it was a button
+    return;
   }
 
-  // ✅ Handle slash commands
-  if (!interaction.isChatInputCommand()) return;
+  // 🟣 Slash Command
+  if (interaction.isChatInputCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-  const command = client.commands.get(interaction.commandName);
-
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    //interaction.reply({ content: '❌ There was an error executing this command.', ephemeral: true });
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: '⚠️ Error executing command.', ephemeral: true });
+    }
   }
 });
+
 
 
 client.login(process.env.DISCORD_TOKEN);
