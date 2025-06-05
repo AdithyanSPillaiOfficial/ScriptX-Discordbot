@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,6 +12,13 @@ module.exports = {
         const channel = interaction.member.guild.channels.cache.find(
             ch => ch.name === 'tickets-admin' && ch.type === 0 // 0 = GUILD_TEXT
         );
+        if (!channel) {
+            channel = await interaction.guild.channels.create({
+                name : "tickets-admin",
+                type : ChannelType.GuildText,
+                reason : "Tickets admin channel needed",
+            })
+        }
         //channel.send(`Ticket Details \n From : ${interaction.member} \n Description : ${interaction.options.getString('description')}`)
         const embed = new EmbedBuilder()
             .setTitle('🎫 Ticket Details')

@@ -3,6 +3,8 @@ const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, B
 const fs = require('node:fs');
 const path = require('node:path');
 const { logError } = require('./logger');
+const { prohibitedWords } = require('./config');
+const { findFirstProhibitedWord } = require('./helper');
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers],
@@ -26,19 +28,20 @@ client.on('messageCreate', async (message) => {
     message.author.send("Hai")
   }
 
-  const bannedWords = ['fuck', 'fuckme', 'banme']
 
   const channel = message.member.guild.channels.cache.find(
     ch => ch.name === 'actions-and-warnings' && ch.type === 0 // 0 = GUILD_TEXT
   );
 
   if (!channel) return;
-  if (bannedWords.includes(message.content)) {
+  const banStatus = findFirstProhibitedWord(message.content, prohibitedWords)
+  if (banStatus != null) {
     try {
       await message.member.timeout(10000, 'Vulger Language');
-      await channel.send(`Member <@${message.member.id}> Has Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content}`)
-      await message.member.send(`You Have Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content}`)
+      await channel.send(`Member <@${message.member.id}> Has Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content} includes ${banStatus}`)
+      await message.member.send(`You Have Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content} includes ${banStatus} \n You are Also Been *Jailed* for the same. To get Unjailed, please create a ticket requesting to unjail`)
       await message.member.roles.set([]);
+      await message.delete()
     } catch (error) {
       logError(error)
     }
