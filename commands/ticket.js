@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
+const db = require("js-minidb");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,11 +20,27 @@ module.exports = {
                 reason : "Tickets admin channel needed",
             })
         }
+
+
+        const lastTicket = db.findLast('ScriptX','tickets') || {ticketno : 0}
+        const lastTicketNo = lastTicket.ticketno;
+
+        const ticket = {user : interaction.member, 
+            description : interaction.options.getString('description'), 
+            status : "submitted",
+            ticketno : lastTicketNo+1,
+        }
+        db.insertOne("ScriptX","tickets",ticket)
         //channel.send(`Ticket Details \n From : ${interaction.member} \n Description : ${interaction.options.getString('description')}`)
         const embed = new EmbedBuilder()
             .setTitle('🎫 Ticket Details')
             .setColor('#5865F2') // Discord blurple
             .addFields(
+                {
+                    name : '🪪 Ticket No.',
+                    value : (lastTicketNo+1).toString(),
+                    inline: false
+                },
                 {
                     name: '👤 From',
                     value: `${interaction.member}`,

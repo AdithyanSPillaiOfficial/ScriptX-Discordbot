@@ -20,7 +20,7 @@ module.exports = {
 
     const oldEmbedFields= EmbedBuilder.from(oldEmbed).data.fields
     //console.log(oldEmbedFields[0].value)
-    const submittedUserId = oldEmbedFields[0].value.replace(/[<@!>]/g, ''); 
+    const submittedUserId = oldEmbedFields[1].value.replace(/[<@!>]/g, ''); 
     const submittedUser = await interaction.client.users.fetch(submittedUserId);
     await interaction.update({ embeds: [updatedEmbed], components: [disabledRow] });
     await submittedUser.send({content : "✅ Ticket Resolved", embeds: [updatedEmbed]})
