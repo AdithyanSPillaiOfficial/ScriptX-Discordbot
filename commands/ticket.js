@@ -59,7 +59,11 @@ module.exports = {
             new ButtonBuilder()
                 .setCustomId('mark_solved')
                 .setLabel('✅ Solved')
-                .setStyle(ButtonStyle.Success)
+                .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+                .setCustomId('claim_ticket')
+                .setLabel('✅ Claim')
+                .setStyle(ButtonStyle.Primary)
         );
 
 
