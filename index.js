@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, ActivityType } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const { logError } = require('./logger');
@@ -12,6 +12,19 @@ const client = new Client({
 
 client.once('ready', () => {
   console.log(`🤖 Logged in as ${client.user.tag}`);
+
+  // Get number of servers
+  const serverCount = client.guilds.cache.size;
+
+  client.user.setPresence({
+    status: "online", // 'online' | 'idle' | 'dnd' | 'invisible'
+    activities: [
+      {
+        name: `${serverCount} Servers`,
+        type: ActivityType.Listening, // Playing | Listening | Watching | Competing
+      },
+    ],
+  });
 });
 
 client.on('messageCreate', async (message) => {
@@ -109,7 +122,7 @@ try {
         await button.execute(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: '⚠️ Error handling button interaction.', ephemeral: true });
+        interaction && await interaction.reply({ content: '⚠️ Error handling button interaction.', ephemeral: true });
       }
       return;
     }
@@ -123,11 +136,11 @@ try {
         await command.execute(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: '⚠️ Error executing command.', ephemeral: true });
+        interaction && await interaction.reply({ content: '⚠️ Error executing command.', ephemeral: true });
       }
     }
   });
-  
+
 } catch (error) {
   console.log(error)
 }

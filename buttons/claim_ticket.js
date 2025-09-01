@@ -72,7 +72,7 @@ module.exports = {
 
 
         await ticketChannel.send({
-            content: `🎟️ Ticket channel created for <@${submittedMember.id}>. Claimed by <@${interaction.user.id}>.`,
+            content: `🎟️ Ticket channel created for <@${submittedMember.id}>. Claimed by <@${interaction.user.id}>. \n Ticket File :  ${interaction.message.url}`,
             embeds: [updatedEmbed],
         });
 
