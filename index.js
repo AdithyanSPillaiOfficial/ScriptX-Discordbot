@@ -48,12 +48,20 @@ client.on('messageCreate', async (message) => {
 
   if (!channel) return;
   const banStatus = findFirstProhibitedWord(message.content, prohibitedWords)
+  // Find the role by name
+  const jailedRole = interaction.guild.roles.cache.find(role => role.name === "Jailed");
+  if (!jailedRole) {
+      return await interaction.reply({
+          content: "❌ Could not find a role named **Jailed**.",
+          ephemeral: true
+      });
+  }
   if (banStatus != null) {
     try {
       await message.member.timeout(10000, 'Vulger Language');
       await channel.send(`Member <@${message.member.id}> Has Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content} includes ${banStatus}`)
       await message.member.send(`You Have Been Send to timeout for 5 mins. Reason : Vulger Language. Content : ${message.content} includes ${banStatus} \n You are Also Been *Jailed* for the same. To get Unjailed, please create a ticket requesting to unjail`)
-      await message.member.roles.set([]);
+      await message.member.roles.set([jailedRole]);
       await message.delete()
     } catch (error) {
       logError(error)
