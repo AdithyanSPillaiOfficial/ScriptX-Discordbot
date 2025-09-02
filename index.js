@@ -49,7 +49,7 @@ client.on('messageCreate', async (message) => {
   if (!channel) return;
   const banStatus = findFirstProhibitedWord(message.content, prohibitedWords)
   // Find the role by name
-  const jailedRole = interaction.guild.roles.cache.find(role => role.name === "Jailed");
+  const jailedRole = message.guild.roles.cache.find(role => role.name === "Jailed");
   if (!jailedRole) {
       return await interaction.reply({
           content: "❌ Could not find a role named **Jailed**.",
