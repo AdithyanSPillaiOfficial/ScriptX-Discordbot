@@ -180,7 +180,34 @@ module.exports = async function registerActionLogger(client) {
 
         for (let roleId of addedRoles) {
             const role = newMember.guild.roles.cache.get(roleId);
-            if (role) {
+
+            // Find the role by name
+            const jailedRole = newMember.guild.roles.cache.find(role => role.name === "Jailed");
+            if (!jailedRole) {
+                return await interaction.reply({
+                    content: "❌ Could not find a role named **Jailed**.",
+                    ephemeral: true
+                });
+            }
+            
+            if (newRoles.includes(jailedRole.id)) {
+                const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
+                const entry = logs.entries.first();
+
+                newMember.roles.set([jailedRole])
+
+                sendLog({
+                    title: "⚠️ Attempt Blocked",
+                    description: `Attempt to add role to ${newMember.user} has been blocked`,
+                    color: Colors.Greyple,
+                    fields: [
+                        {name : "Reason", value : "User is jailed"},
+                        { name: "Role", value: role.name },
+                        entry ? { name: "Executor", value: `${entry.executor}` } : {}
+                    ].filter(f => f.name)
+                }, newMember);
+            }
+            else if (role) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
                 const entry = logs.entries.first();
                 sendLog({
@@ -227,7 +254,7 @@ module.exports = async function registerActionLogger(client) {
                 color: Colors.Red,
                 fields: [
                     entry?.target.id === newMember.id ? { name: "Executor", value: `${entry.executor}` } : {},
-                    {name : "Time Remaining", value : `<t:${Math.floor(newTimeout.getTime() / 1000)}:R>`}
+                    { name: "Time Remaining", value: `<t:${Math.floor(newTimeout.getTime() / 1000)}:R>` }
                 ].filter(f => f.name)
             }, newMember);
         }
@@ -302,21 +329,21 @@ module.exports = async function registerActionLogger(client) {
             }, newState);
         } else if (oldState.channelId !== newState.channelId) {
             let executor = null;
-        try {
-            const logs = await newState.guild.fetchAuditLogs({
-                type: AuditLogEvent.MemberMove,
-                limit: 1
-            });
-            const entry = logs.entries.first();
-            // Confirm this log entry is about the same user
-            // console.log(entry.executor)
-            // if (entry && entry.target.id === newState.id) {
-            if(entry) {
-                executor = entry.executor;
+            try {
+                const logs = await newState.guild.fetchAuditLogs({
+                    type: AuditLogEvent.MemberMove,
+                    limit: 1
+                });
+                const entry = logs.entries.first();
+                // Confirm this log entry is about the same user
+                // console.log(entry.executor)
+                // if (entry && entry.target.id === newState.id) {
+                if (entry) {
+                    executor = entry.executor;
+                }
+            } catch (err) {
+                console.error("Failed to fetch audit logs:", err);
             }
-        } catch (err) {
-            console.error("Failed to fetch audit logs:", err);
-        }
 
             sendLog({
                 title: "🎤 Voice Move",
