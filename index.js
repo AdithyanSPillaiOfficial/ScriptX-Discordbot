@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, ActivityType, Events, Colors } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const { logError } = require('./logger');
@@ -7,7 +7,7 @@ const { prohibitedWords } = require('./config');
 const { findFirstProhibitedWord } = require('./helper');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildModeration],
 });
 
 client.once('ready', () => {
@@ -26,6 +26,9 @@ client.once('ready', () => {
     ],
   });
 });
+
+const registerActionLogger = require("./actionlog");
+registerActionLogger(client)
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
@@ -51,10 +54,10 @@ client.on('messageCreate', async (message) => {
   // Find the role by name
   const jailedRole = message.guild.roles.cache.find(role => role.name === "Jailed");
   if (!jailedRole) {
-      return await interaction.reply({
-          content: "❌ Could not find a role named **Jailed**.",
-          ephemeral: true
-      });
+    return await interaction.reply({
+      content: "❌ Could not find a role named **Jailed**.",
+      ephemeral: true
+    });
   }
   if (banStatus != null) {
     try {
