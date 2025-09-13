@@ -189,7 +189,7 @@ module.exports = async function registerActionLogger(client) {
                     ephemeral: true
                 });
             }
-            
+
             if (newRoles.includes(jailedRole.id)) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
                 const entry = logs.entries.first();
@@ -201,7 +201,7 @@ module.exports = async function registerActionLogger(client) {
                     description: `Attempt to add role to ${newMember.user} has been blocked`,
                     color: Colors.Greyple,
                     fields: [
-                        {name : "Reason", value : "User is jailed"},
+                        { name: "Reason", value: "User is jailed" },
                         { name: "Role", value: role.name },
                         entry ? { name: "Executor", value: `${entry.executor}` } : {}
                     ].filter(f => f.name)
@@ -224,18 +224,40 @@ module.exports = async function registerActionLogger(client) {
 
         for (let roleId of removedRoles) {
             const role = newMember.guild.roles.cache.get(roleId);
+
+            const wardenRole = newMember.guild.roles.cache.find(role => role.name === "Warden");
+            const jailedRole = newMember.guild.roles.cache.find(role => role.name === "Jailed");
+
             if (role) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 });
                 const entry = logs.entries.first();
-                sendLog({
-                    title: "❌ Role Removed",
-                    description: `Role removed from **${newMember.user}**`,
-                    color: Colors.Red,
+                const executorUser = await newMember.guild.members.fetch(entry.executor.id);
+
+                if (executorUser.roles.cache.some(role => role.id == wardenRole.id)) {
+
+                    sendLog({
+                        title: "❌ Role Removed",
+                        description: `Role removed from **${newMember.user}**`,
+                        color: Colors.Red,
+                        fields: [
+                            { name: "Role", value: role.name },
+                            entry ? { name: "Executor", value: `${entry.executor}` } : {}
+                        ].filter(f => f.name)
+                    }, newMember);
+                } else {
+                    newMember.roles.set([jailedRole]);
+                    sendLog({
+                    title: "⚠️ Attempt Blocked",
+                    description: `Attempt to remove role from ${newMember.user} has been blocked`,
+                    color: Colors.Greyple,
                     fields: [
+                        { name: "Reason", value: "Executor is not a warden" },
                         { name: "Role", value: role.name },
                         entry ? { name: "Executor", value: `${entry.executor}` } : {}
                     ].filter(f => f.name)
                 }, newMember);
+                }
+
             }
         }
 
