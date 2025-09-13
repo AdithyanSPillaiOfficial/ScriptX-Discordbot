@@ -190,7 +190,7 @@ module.exports = async function registerActionLogger(client) {
                 });
             }
 
-            if (newRoles.includes(jailedRole.id)) {
+            if (oldRoles.includes(jailedRole.id)) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
                 const entry = logs.entries.first();
 
@@ -233,7 +233,7 @@ module.exports = async function registerActionLogger(client) {
                 const entry = logs.entries.first();
                 const executorUser = await newMember.guild.members.fetch(entry.executor.id);
 
-                if (executorUser.roles.cache.some(role => role.id == wardenRole.id)) {
+                if ((role.name == "Jailed" && executorUser.roles.cache.some(role => role.id == wardenRole.id)) || role.name != "Jailed") {
 
                     sendLog({
                         title: "❌ Role Removed",
