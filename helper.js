@@ -17,4 +17,20 @@ async function sendtoLogchannel(embed, guild) {
   channel.send({embeds : [embed]})
 }
 
-module.exports = { findFirstProhibitedWord, sendtoLogchannel }
+async function sendTexttoLogchannel(text, guild) {
+  let channel = guild.channels.cache.find(
+    ch => ch.name === 'scriptx-log' && ch.type === 0 // 0 = GUILD_TEXT
+  );
+  if (!channel) {
+    channel = await guild.channels.create({
+      name: "scriptx-log",
+      type: ChannelType.GuildText,
+      reason: "ScriptX Log channel needed",
+    })
+  }
+
+  channel.send({content : text});
+}
+
+
+module.exports = { findFirstProhibitedWord, sendtoLogchannel, sendTexttoLogchannel }

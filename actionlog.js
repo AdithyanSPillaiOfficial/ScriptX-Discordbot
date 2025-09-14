@@ -8,6 +8,7 @@ const {
     ChannelType,
     AuditLogEvent
 } = require("discord.js");
+const { sendTexttoLogchannel } = require("./helper");
 
 // const TOKEN = "YOUR_BOT_TOKEN";
 // const LOG_CHANNEL_ID = "YOUR_LOG_CHANNEL_ID";
@@ -184,17 +185,18 @@ module.exports = async function registerActionLogger(client) {
             // Find the role by name
             const jailedRole = newMember.guild.roles.cache.find(role => role.name === "Jailed");
             if (!jailedRole) {
-                return await interaction.reply({
-                    content: "❌ Could not find a role named **Jailed**.",
-                    ephemeral: true
-                });
+                // return await interaction.reply({
+                //     content: "❌ Could not find a role named **Jailed**.",
+                //     ephemeral: true
+                // });
+                sendTexttoLogchannel("❌ Could not find a role named **Jailed**.", newMember.guild);
             }
 
-            if(newRoles.includes(jailedRole.id)) {
+            if(newRoles.includes(jailedRole?.id)) {
                 newMember.roles.set([jailedRole]);
             }
 
-            if (oldRoles.includes(jailedRole.id)) {
+            if (oldRoles.includes(jailedRole?.id)) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
                 const entry = logs.entries.first();
 
@@ -206,7 +208,7 @@ module.exports = async function registerActionLogger(client) {
                     color: Colors.Greyple,
                     fields: [
                         { name: "Reason", value: "User is jailed" },
-                        { name: "Role", value: role.name },
+                        { name: "Role", value: `${role}` },
                         entry ? { name: "Executor", value: `${entry.executor}` } : {}
                     ].filter(f => f.name)
                 }, newMember);
@@ -219,7 +221,7 @@ module.exports = async function registerActionLogger(client) {
                     description: `Role added to <@${newMember.user.id}>`,
                     color: Colors.Green,
                     fields: [
-                        { name: "Role", value: role.name },
+                        { name: "Role", value: `${role}` },
                         entry ? { name: "Executor", value: `${entry.executor}` } : {}
                     ].filter(f => f.name)
                 }, newMember);
@@ -237,18 +239,18 @@ module.exports = async function registerActionLogger(client) {
                 const entry = logs.entries.first();
                 const executorUser = await newMember.guild.members.fetch(entry.executor.id);
 
-                if ((role.name == "Jailed" && executorUser.roles.cache.some(role => role.id == wardenRole.id)) || role.name != "Jailed") {
+                if ((role.name == "Jailed" && executorUser.roles.cache.some(role => role.id == wardenRole?.id)) || role.name != "Jailed") {
 
                     sendLog({
                         title: "❌ Role Removed",
                         description: `Role removed from **${newMember.user}**`,
                         color: Colors.Red,
                         fields: [
-                            { name: "Role", value: role.name },
+                            { name: "Role", value: `${role}` },
                             entry ? { name: "Executor", value: `${entry.executor}` } : {}
                         ].filter(f => f.name)
                     }, newMember);
-                } else {
+                } else if(jailedRole) {
                     newMember.roles.set([jailedRole]);
                     sendLog({
                     title: "⚠️ Attempt Blocked",
@@ -256,7 +258,7 @@ module.exports = async function registerActionLogger(client) {
                     color: Colors.Greyple,
                     fields: [
                         { name: "Reason", value: "Executor is not a warden" },
-                        { name: "Role", value: role.name },
+                        { name: "Role", value: `${role}` },
                         entry ? { name: "Executor", value: `${entry.executor}` } : {}
                     ].filter(f => f.name)
                 }, newMember);
