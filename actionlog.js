@@ -190,6 +190,10 @@ module.exports = async function registerActionLogger(client) {
                 });
             }
 
+            if(newRoles.includes(jailedRole.id)) {
+                newMember.roles.set([jailedRole]);
+            }
+
             if (oldRoles.includes(jailedRole.id)) {
                 const logs = await newMember.guild.fetchAuditLogs({ type: 25, limit: 1 }); // MEMBER_ROLE_UPDATE
                 const entry = logs.entries.first();
