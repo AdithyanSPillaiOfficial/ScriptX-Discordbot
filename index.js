@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, ActivityType, Events, Colors } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle, ActivityType, Events, Colors, Partials } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const { logError } = require('./logger');
@@ -7,7 +7,12 @@ const { prohibitedWords } = require('./config');
 const { findFirstProhibitedWord } = require('./helper');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildModeration],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildMessageReactions],
+  partials: [
+    Partials.Message,
+    Partials.Channel,
+    Partials.Reaction
+  ]
 });
 
 client.once('ready', () => {

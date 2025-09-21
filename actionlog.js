@@ -192,7 +192,7 @@ module.exports = async function registerActionLogger(client) {
                 sendTexttoLogchannel("❌ Could not find a role named **Jailed**.", newMember.guild);
             }
 
-            if(newRoles.includes(jailedRole?.id)) {
+            if (newRoles.includes(jailedRole?.id)) {
                 newMember.roles.set([jailedRole]);
             }
 
@@ -250,18 +250,18 @@ module.exports = async function registerActionLogger(client) {
                             entry ? { name: "Executor", value: `${entry.executor}` } : {}
                         ].filter(f => f.name)
                     }, newMember);
-                } else if(jailedRole) {
+                } else if (jailedRole) {
                     newMember.roles.set([jailedRole]);
                     sendLog({
-                    title: "⚠️ Attempt Blocked",
-                    description: `Attempt to remove role from ${newMember.user} has been blocked`,
-                    color: Colors.Greyple,
-                    fields: [
-                        { name: "Reason", value: "Executor is not a warden" },
-                        { name: "Role", value: `${role}` },
-                        entry ? { name: "Executor", value: `${entry.executor}` } : {}
-                    ].filter(f => f.name)
-                }, newMember);
+                        title: "⚠️ Attempt Blocked",
+                        description: `Attempt to remove role from ${newMember.user} has been blocked`,
+                        color: Colors.Greyple,
+                        fields: [
+                            { name: "Reason", value: "Executor is not a warden" },
+                            { name: "Role", value: `${role}` },
+                            entry ? { name: "Executor", value: `${entry.executor}` } : {}
+                        ].filter(f => f.name)
+                    }, newMember);
                 }
 
             }
@@ -380,5 +380,54 @@ module.exports = async function registerActionLogger(client) {
             }, newState);
         }
     });
+
+    // =================
+    // Reaction Logs
+    // =================
+
+    // When someone reacts to a message
+    client.on(Events.MessageReactionAdd, async (reaction, user) => {
+        console.log("Hai");
+        // Handle partials (if reaction is not cached)
+        if (reaction.partial) {
+            try {
+                await reaction.fetch();
+            } catch (error) {
+                console.error("Fetching reaction failed:", error);
+                return;
+            }
+        }
+
+        const jumpUrl = `https://discord.com/channels/${reaction.message.guildId}/${reaction.message.channelId}/${reaction.message.id}`;
+        sendLog({
+            title: "®️ Added Reaction",
+            description: `${user} reacted with ${reaction.emoji} to message: ${jumpUrl}`,
+            color: Colors.Green
+        }, reaction.message);
+
+        //console.log(`${user.tag} reacted with ${reaction.emoji.name} to message: ${reaction.message}`);
+    });
+
+    // When someone removes a reaction
+    client.on(Events.MessageReactionRemove, async (reaction, user) => {
+        if (reaction.partial) {
+            try {
+                await reaction.fetch();
+            } catch (error) {
+                console.error("Fetching reaction failed:", error);
+                return;
+            }
+        }
+
+        const jumpUrl = `https://discord.com/channels/${reaction.message.guildId}/${reaction.message.channelId}/${reaction.message.id}`;
+        sendLog({
+            title: "®️❌ Removed Reaction",
+            description: `${user} removed their ${reaction.emoji} reaction from message: ${jumpUrl}`,
+            color: Colors.Red
+        }, reaction.message);
+
+        //console.log(`${user.tag} removed their ${reaction.emoji.name} reaction from message: ${reaction.message.content}`);
+    });
+
 
 }
