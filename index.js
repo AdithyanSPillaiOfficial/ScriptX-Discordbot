@@ -33,7 +33,14 @@ client.once('ready', () => {
 });
 
 const registerActionLogger = require("./actionlog");
-registerActionLogger(client)
+const antiSpammingHandler = require('./features/antispamming');
+
+try {
+  registerActionLogger(client)
+  antiSpammingHandler(client)
+} catch (error) {
+  console.log(error);
+}
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
@@ -161,6 +168,15 @@ try {
   console.log(error)
 }
 
+
+// --- GLOBAL ERROR HANDLERS ---
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("⚠️ Unhandled Rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("⚠️ Uncaught Exception:", error);
+});
 
 
 
