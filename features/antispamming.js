@@ -42,7 +42,6 @@ module.exports = async function antiSpammingHandler(client) {
                 }, message.guild);
 
                 for (let i = guildMessageArray.length - 1; i > guildMessageArray.length - spamBlockCount-1 && i >= 0; i--) {
-                    console.log(i);
                     guildMessageArray[i].delete()
                 }
 
